@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awaire — Know your flight</title>
+<meta name="description" content="Real pilot data. Live turbulence. A Captain AI that explains your flight like a pilot would. For passengers, built by pilots from Northern California.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@200;300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#080c14;color:#fff;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;height:64px;display:flex;justify-content:space-between;align-items:center;padding:0 40px;background:rgba(8,12,20,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(255,255,255,0.06);z-index:100;transition:background 0.3s ease}
+nav.scrolled{background:rgba(8,12,20,0.98)}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-wordmark{font-family:'Outfit',sans-serif;font-weight:300;font-size:22px;letter-spacing:-0.5px;color:#fff}
+.nav-wordmark .air{color:#3b7dd8}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-links{display:flex;align-items:center;gap:22px;margin-right:14px}
+.nav-links a{font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;cursor:pointer;transition:color 0.2s}
+.nav-links a:hover{color:rgba(255,255,255,0.8)}
+.btn-signin{padding:9px 18px;background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;color:#fff;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.2s;text-decoration:none}
+.btn-signin:hover{background:rgba(255,255,255,0.13)}
+.btn-nav-cta{padding:9px 18px;background:#3b7dd8;border:none;border-radius:10px;font-size:13px;color:#fff;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.2s;text-decoration:none}
+.btn-nav-cta:hover{background:#2f69c0}
+
+/* BETA BANNER */
+.beta-banner{background:rgba(232,197,71,0.08);border-bottom:0.5px solid rgba(232,197,71,0.2);padding:10px 40px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:64px}
+.beta-banner-text{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;text-align:center}
+.beta-banner-text strong{color:#e8c547;font-weight:500}
+.beta-banner-btn{padding:6px 14px;background:rgba(232,197,71,0.15);border:0.5px solid rgba(232,197,71,0.4);border-radius:20px;font-size:12px;color:#e8c547;font-weight:500;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.beta-banner-btn:hover{background:rgba(232,197,71,0.25)}
+
+/* HERO */
+.hero{padding:80px 40px 90px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(59,125,216,0.12);border:0.5px solid rgba(59,125,216,0.3);border-radius:20px;font-size:12px;color:#5b9cf0;margin-bottom:28px;font-weight:500;letter-spacing:0.04em;opacity:0;animation:fadeUp 0.6s ease forwards 0.2s}
+.hero h1{font-family:'DM Serif Display',serif;font-size:62px;line-height:1.1;max-width:700px;margin-bottom:22px;letter-spacing:-1px;opacity:0;animation:fadeUp 0.7s ease forwards 0.4s}
+.hero h1 em{font-style:italic;color:#3b7dd8}
+.hero-sub{font-size:17px;color:rgba(255,255,255,0.5);max-width:480px;line-height:1.7;margin-bottom:40px;opacity:0;animation:fadeUp 0.7s ease forwards 0.6s}
+.hero-btns{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp 0.7s ease forwards 0.8s}
+.btn-primary{padding:16px 36px;background:#3b7dd8;border-radius:14px;font-size:16px;font-weight:500;color:#fff;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:background 0.2s;text-decoration:none;display:inline-block}
+.btn-primary:hover{background:#2f69c0}
+.btn-beta{padding:16px 28px;background:rgba(232,197,71,0.1);border:0.5px solid rgba(232,197,71,0.3);border-radius:14px;font-size:16px;color:#e8c547;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.2s;text-decoration:none;display:inline-block;font-weight:500}
+.btn-beta:hover{background:rgba(232,197,71,0.18)}
+.btn-ghost{padding:16px 28px;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);border-radius:14px;font-size:16px;color:rgba(255,255,255,0.6);cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.2s;text-decoration:none;display:inline-block}
+.btn-ghost:hover{background:rgba(255,255,255,0.09)}
+.hero-note{margin-top:16px;font-size:12px;color:rgba(255,255,255,0.25);opacity:0;animation:fadeUp 0.7s ease forwards 1s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* BETA SECTION */
+.beta-section{padding:70px 40px;max-width:760px;margin:0 auto}
+.beta-card{background:rgba(232,197,71,0.06);border:0.5px solid rgba(232,197,71,0.2);border-radius:28px;padding:48px}
+.beta-top{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.beta-avatar{width:52px;height:52px;border-radius:50%;background:rgba(59,125,216,0.2);border:0.5px solid rgba(59,125,216,0.3);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:22px;color:#5b9cf0;flex-shrink:0}
+.beta-from{font-size:10px;font-weight:500;letter-spacing:0.12em;color:#e8c547;text-transform:uppercase;margin-bottom:3px}
+.beta-name{font-size:14px;color:rgba(255,255,255,0.7)}
+.beta-headline{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;line-height:1.3;margin-bottom:18px}
+.beta-body{font-size:14px;color:rgba(255,255,255,0.55);line-height:1.8;margin-bottom:24px}
+.beta-body p+p{margin-top:12px}
+.beta-bullets{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.beta-bullet{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.5}
+.beta-bullet-dot{width:6px;height:6px;border-radius:50%;background:#e8c547;flex-shrink:0;margin-top:5px}
+.beta-cta{display:inline-block;padding:15px 36px;background:#e8c547;border-radius:14px;font-size:15px;font-weight:500;color:#080c14;text-decoration:none;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:background 0.2s}
+.beta-cta:hover{background:#d4b33d}
+.beta-sub{margin-top:12px;font-size:11px;color:rgba(255,255,255,0.25)}
+.beta-ios{margin-top:16px;font-size:12px;color:rgba(255,255,255,0.3);font-style:italic}
+
+/* FEATURES */
+.features{padding:90px 40px;max-width:1040px;margin:0 auto}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.14em;color:#3b7dd8;text-transform:uppercase;margin-bottom:14px;text-align:center}
+.section-title{font-family:'DM Serif Display',serif;font-size:38px;text-align:center;margin-bottom:52px;line-height:1.2}
+.section-subtitle{font-size:15px;color:rgba(255,255,255,0.45);text-align:center;max-width:520px;margin:10px auto 44px;line-height:1.6}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.feat-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;transition:border-color 0.2s,background 0.2s}
+.feat-card:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.14)}
+.feat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;flex-shrink:0}
+.feat-title{font-size:15px;font-weight:500;margin-bottom:8px}
+.feat-body{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65}
+
+/* HOW IT WORKS */
+.hiw{padding:90px 40px;max-width:900px;margin:0 auto}
+.hiw-steps{display:flex;flex-direction:column;gap:0}
+.hiw-step{display:flex;gap:32px;align-items:flex-start}
+.hiw-step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px}
+.hiw-num{width:52px;height:52px;border-radius:50%;background:rgba(59,125,216,0.12);border:0.5px solid rgba(59,125,216,0.3);display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:300;font-size:18px;color:#5b9cf0;flex-shrink:0}
+.hiw-connector{width:1px;flex:1;background:rgba(255,255,255,0.07);margin:12px 0;min-height:40px}
+.hiw-step-right{flex:1;padding-bottom:60px}
+.hiw-step-label{font-size:11px;font-weight:500;letter-spacing:0.12em;color:#e8c547;text-transform:uppercase;margin-bottom:8px;margin-top:14px}
+.hiw-step-title{font-family:'DM Serif Display',serif;font-size:28px;line-height:1.2;margin-bottom:14px}
+.hiw-step-body{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin-bottom:16px;max-width:480px}
+.hiw-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.hiw-tag{font-size:11px;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:4px 12px}
+.mock-screen{background:#0d1624;border:0.5px solid rgba(255,255,255,0.1);border-radius:16px;overflow:hidden;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.mock-header{background:rgba(255,255,255,0.04);border-bottom:0.5px solid rgba(255,255,255,0.07);padding:10px 14px;display:flex;align-items:center;gap:12px}
+.mock-dots{display:flex;gap:5px}
+.mock-dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.12)}
+.mock-title{font-size:11px;color:rgba(255,255,255,0.3);flex:1;text-align:center}
+.mock-body{background:#080c14}
+
+/* DATA SOURCES */
+.data-sources{padding:80px 40px;max-width:960px;margin:0 auto}
+.sources-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.source-card{background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;transition:border-color 0.2s}
+.source-card:hover{border-color:rgba(255,255,255,0.14)}
+.source-name{font-size:13px;font-weight:500;color:#fff;margin-bottom:3px}
+.source-org{font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:10px}
+.source-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.65}
+.source-free{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.08em;color:#30d158;background:rgba(48,209,88,0.1);border:0.5px solid rgba(48,209,88,0.25);border-radius:20px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.source-paid{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.08em;color:#ff9f0a;background:rgba(255,159,10,0.1);border:0.5px solid rgba(255,159,10,0.25);border-radius:20px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.sources-note{text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:20px}
+
+/* DIVIDER */
+.divider{width:100%;height:0.5px;background:rgba(255,255,255,0.06);margin:0}
+
+/* FOUNDER */
+.founder{padding:80px 40px;max-width:760px;margin:0 auto}
+.founder-card{background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.08);border-radius:28px;padding:48px;display:flex;gap:40px;align-items:flex-start}
+.founder-avatar{width:80px;height:80px;border-radius:50%;background:rgba(59,125,216,0.15);border:0.5px solid rgba(59,125,216,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'DM Serif Display',serif;font-size:28px;color:#5b9cf0}
+.founder-label{font-size:10px;font-weight:500;letter-spacing:0.12em;color:#e8c547;text-transform:uppercase;margin-bottom:10px}
+.founder-quote{font-family:'DM Serif Display',serif;font-size:22px;line-height:1.45;margin-bottom:18px;color:#fff}
+.founder-body{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8}
+.founder-body p+p{margin-top:14px}
+.founder-sig{margin-top:22px}
+.founder-sig strong{display:block;color:rgba(255,255,255,0.7);font-size:14px;font-weight:500;margin-bottom:2px}
+.founder-sig span{color:rgba(255,255,255,0.3);font-size:13px}
+
+/* PRICING */
+.pricing{padding:80px 40px;max-width:820px;margin:0 auto}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:48px}
+.price-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:26px;text-align:center;display:flex;flex-direction:column}
+.price-card.featured{background:rgba(59,125,216,0.08);border:0.5px solid rgba(59,125,216,0.35)}
+.price-badge{font-size:10px;font-weight:500;letter-spacing:0.08em;color:#5b9cf0;background:rgba(59,125,216,0.15);border:0.5px solid rgba(59,125,216,0.3);border-radius:20px;padding:3px 10px;display:inline-block;margin-bottom:12px}
+.price-badge-green{font-size:10px;font-weight:500;letter-spacing:0.08em;color:#30d158;background:rgba(48,209,88,0.12);border:0.5px solid rgba(48,209,88,0.3);border-radius:20px;padding:3px 10px;display:inline-block;margin-bottom:12px}
+.price-name{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:8px}
+.price-amount{font-size:34px;font-weight:300;font-family:'Outfit',sans-serif;letter-spacing:-1px;margin-bottom:3px}
+.price-period{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:14px}
+.price-desc{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.65;margin-bottom:20px;flex:1}
+.price-btn{padding:12px 0;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;border:none;width:100%;transition:background 0.2s}
+.price-btn-ghost{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}
+.price-btn-ghost:hover{background:rgba(255,255,255,0.1)}
+.price-btn-blue{background:#3b7dd8;color:#fff}
+.price-btn-blue:hover{background:#2f69c0}
+.price-btn-gold{background:rgba(232,197,71,0.15);border:0.5px solid rgba(232,197,71,0.3);color:#e8c547}
+.price-btn-gold:hover{background:rgba(232,197,71,0.25)}
+.pricing-note{text-align:center;font-size:12px;color:rgba(255,255,255,0.22);margin-top:20px}
+
+/* CTA */
+.cta-section{padding:80px 40px;text-align:center}
+.cta-section h2{font-family:'DM Serif Display',serif;font-size:44px;margin-bottom:14px;line-height:1.2}
+.cta-section p{font-size:16px;color:rgba(255,255,255,0.45);margin-bottom:32px}
+.cta-note{margin-top:14px;font-size:12px;color:rgba(255,255,255,0.2)}
+
+/* FOOTER */
+footer{padding:32px 40px;border-top:0.5px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-logo{display:flex;align-items:center;gap:10px;font-family:'Outfit',sans-serif;font-weight:300;font-size:16px;color:#fff;text-decoration:none}
+.footer-logo .air{color:#3b7dd8}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:12px;color:rgba(255,255,255,0.2);text-decoration:none;cursor:pointer;transition:color 0.2s}
+.footer-links a:hover{color:rgba(255,255,255,0.5)}
+.footer-copy{font-size:12px;color:rgba(255,255,255,0.2)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .beta-banner{padding:10px 20px;flex-direction:column;gap:8px}
+  .hero{padding:60px 24px 60px}
+  .hero h1{font-size:38px}
+  .hero-sub{font-size:15px}
+  .hero-btns{flex-direction:column;width:100%}
+  .btn-primary,.btn-beta,.btn-ghost{width:100%;text-align:center}
+  .beta-section{padding:48px 24px}
+  .beta-card{padding:28px}
+  .features{padding:60px 24px}
+  .section-title{font-size:28px}
+  .features-grid{grid-template-columns:1fr}
+  .hiw{padding:60px 24px}
+  .hiw-step{gap:20px}
+  .hiw-step-right{padding-bottom:40px}
+  .hiw-step-title{font-size:22px}
+  .mock-screen{max-width:100%}
+  .data-sources{padding:60px 24px}
+  .sources-grid{grid-template-columns:1fr 1fr}
+  .founder{padding:60px 24px}
+  .founder-card{flex-direction:column;padding:32px;gap:24px}
+  .founder-avatar{margin:0 auto}
+  .pricing{padding:60px 24px}
+  .pricing-grid{grid-template-columns:1fr}
+  .cta-section{padding:60px 24px}
+  .cta-section h2{font-size:32px}
+  footer{padding:24px;flex-direction:column;text-align:center}
+  .footer-links{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-logo" href="#">
+    <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
+      <path d="M22 2 L27 22 L22 42 L17 22 Z" fill="#ffffff"/>
+      <path d="M2 22 L22 17 L42 22 L22 27 Z" fill="#ffffff"/>
+      <circle cx="22" cy="22" r="4" fill="#3b7dd8"/>
+    </svg>
+    <span class="nav-wordmark">Aw<span class="air">air</span>e</span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a onclick="document.getElementById('beta').scrollIntoView({behavior:'smooth'})">Beta</a>
+      <a onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+      <a onclick="document.getElementById('intel').scrollIntoView({behavior:'smooth'})">Airport Intel</a>
+      <a onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">How it works</a>
+      <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</a>
+      <a onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">About</a>
+    </div>
+    <a class="btn-signin" href="/app?mode=signin">Sign in</a>
+    <a class="btn-nav-cta" href="/app?mode=signup">Get started</a>
+  </div>
+</nav>
+
+<!-- BETA BANNER -->
+<div class="beta-banner">
+  <div class="beta-banner-text">
+    <strong>Awaire is in free beta.</strong> The iOS app launches in a few months — try the web app free now and help shape what it becomes.
+  </div>
+  <a class="beta-banner-btn" onclick="document.getElementById('beta').scrollIntoView({behavior:'smooth'})">Join free beta →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <svg width="14" height="14" viewBox="0 0 44 44" fill="none">
+      <path d="M22 2 L27 22 L22 42 L17 22 Z" fill="#5b9cf0"/>
+      <path d="M2 22 L22 17 L42 22 L22 27 Z" fill="#5b9cf0"/>
+      <circle cx="22" cy="22" r="4" fill="#3b7dd8"/>
+    </svg>
+    For passengers, built by pilots · iOS app coming soon
+  </div>
+  <h1>Your flight,<br><em>finally</em> explained</h1>
+  <p class="hero-sub">Live pilot reports, real-time turbulence data, and a Captain AI that gives you the same briefing your pilots get — in plain English.</p>
+  <div class="hero-btns">
+    <a class="btn-beta" onclick="document.getElementById('beta').scrollIntoView({behavior:'smooth'})">
+      ✦ Join the free beta
+    </a>
+    <a class="btn-ghost" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">See how it works</a>
+  </div>
+  <div class="hero-note">Free during beta · iOS app launching in a few months</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-label">What Awaire does</div>
+  <div class="section-title">A pilot's perspective,<br>the whole way</div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(59,125,216,0.15)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b7dd8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z"/></svg>
+      </div>
+      <div class="feat-title">Live turbulence data</div>
+      <div class="feat-body">Real pilot reports filtered to your exact route and altitude — updated every hour from actual pilots in the air, not cached weather models. Tap to check when you feel bumps.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(232,197,71,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c547" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <div class="feat-title">Captain AI</div>
+      <div class="feat-body">Ask anything about your flight — that sound, the delay, what the pilots are doing right now — and get a straight answer in plain English. No aviation jargon.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(48,209,88,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="feat-title">Flight phase narration</div>
+      <div class="feat-body">From pushback to touchdown, know exactly what the crew is doing at every moment. Every phase explained in real time — takeoff, climb, cruise, descent, approach, landing.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(255,159,10,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+      </div>
+      <div class="feat-title">Sound explanations</div>
+      <div class="feat-body">Every click, thunk, and whir explained by a pilot — the gear retracting, flaps extending, engine power changes — with the pilot's explanation for exactly when you hear it.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(45,212,191,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+      </div>
+      <div class="feat-title">Delay intelligence</div>
+      <div class="feat-body">The real reason your flight is delayed — runway closures, ground stops, airspace flow programs, capacity restrictions — explained in plain English from live FAA and NOTAM data.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(255,69,58,0.1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff453a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="feat-title">Airport intel</div>
+      <div class="feat-body">Live weather, active approaches, runway status, and FAA conditions at both airports — plus a plain-English explanation of exactly what it all means for your departure and arrival.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(59,125,216,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b7dd8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L7 10 1 8.2l8-4 12 8-8 8zM5 20l6-4"/></svg>
+      </div>
+      <div class="feat-title">Pre-departure briefing</div>
+      <div class="feat-body">Flight not for hours yet? Get a full pre-departure briefing — weather at both airports, route conditions, inbound aircraft tracking, and a live departure countdown.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(255,159,10,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="feat-title">Inbound aircraft tracking</div>
+      <div class="feat-body">See where your aircraft is coming from before your flight. Live position, ETA to your gate, and whether a late inbound means your departure will slip — before the airline says anything.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:rgba(48,209,88,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="feat-title">Live position tracking</div>
+      <div class="feat-body">Real-time aircraft position from FlightAware AeroAPI — the same data source airlines and air traffic control use. Phase of flight derived from live ADS-B, never estimated.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="hiw" id="how-it-works">
+  <div class="section-label">How it works</div>
+  <div class="section-title">Three steps to a smarter flight</div>
+  <p class="section-subtitle">From the moment you enter your flight number to the moment you land — Awaire is with you the whole way.</p>
+
+  <div class="hiw-steps">
+    <div class="hiw-step">
+      <div class="hiw-step-left">
+        <div class="hiw-num">01</div>
+        <div class="hiw-connector"></div>
+      </div>
+      <div class="hiw-step-right">
+        <div class="hiw-step-label">Before you board</div>
+        <div class="hiw-step-title">Enter your flight number</div>
+        <div class="hiw-step-body">Type in your flight number and select your date. Awaire pulls your full briefing — live weather at both airports, turbulence reports along your route, delay status, inbound aircraft, and what's happening with the FAA right now. The same data your pilots reviewed this morning.</div>
+        <div class="hiw-tags">
+          <span class="hiw-tag">Live flight data</span>
+          <span class="hiw-tag">Weather briefing</span>
+          <span class="hiw-tag">Delay intelligence</span>
+          <span class="hiw-tag">Inbound aircraft</span>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-header">
+            <div class="mock-dots"><span></span><span></span><span></span></div>
+            <div class="mock-title">awaire.app</div>
+          </div>
+          <div class="mock-body">
+            <div style="padding:16px">
+              <div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;margin-bottom:8px">FLIGHT NUMBER</div>
+              <div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(59,125,216,0.5);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span style="font-size:14px;color:#fff;font-weight:500">WN2019</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:rgba(255,255,255,0.5)">Today, Apr 9</div>
+              <div style="background:#3b7dd8;border-radius:10px;padding:13px;text-align:center;font-size:14px;font-weight:500;color:#fff">Get Flight Briefing</div>
+              <div style="margin-top:14px;padding:12px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:12px">
+                <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px">INBOUND AIRCRAFT</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-size:12px;color:#fff;font-weight:500">WN1456 · LAS → SAN</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px">Airborne · lands in 34 min</div>
+                  </div>
+                  <div style="font-size:11px;color:#30d158;background:rgba(48,209,88,0.1);border:0.5px solid rgba(48,209,88,0.25);border-radius:20px;padding:3px 9px">On time</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hiw-step">
+      <div class="hiw-step-left">
+        <div class="hiw-num">02</div>
+        <div class="hiw-connector"></div>
+      </div>
+      <div class="hiw-step-right">
+        <div class="hiw-step-label">During your flight</div>
+        <div class="hiw-step-title">Follow along in real time</div>
+        <div class="hiw-step-body">As you fly, Awaire tracks your live position from FlightAware AeroAPI and narrates each phase — what the crew is doing, what you're about to hear, and what the turbulence means. The map shows your path with turbulence zones color-coded from real pilot reports.</div>
+        <div class="hiw-tags">
+          <span class="hiw-tag">Live ADS-B position</span>
+          <span class="hiw-tag">Phase narration</span>
+          <span class="hiw-tag">Turbulence map</span>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-header">
+            <div class="mock-dots"><span></span><span></span><span></span></div>
+            <div class="mock-title">UA234 · FLL → CLE</div>
+          </div>
+          <div class="mock-body">
+            <div style="background:#0d1829;height:110px;position:relative;overflow:hidden">
+              <svg width="100%" height="100%" viewBox="0 0 360 110" preserveAspectRatio="none" style="position:absolute;inset:0">
+                <line x1="40" y1="90" x2="320" y2="20" stroke="rgba(59,125,216,0.2)" stroke-width="1" stroke-dasharray="4 3"/>
+                <line x1="40" y1="90" x2="160" y2="55" stroke="#30d158" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="160" y1="55" x2="220" y2="40" stroke="#ff9f0a" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="220" y1="40" x2="260" y2="30" stroke="#ff6b00" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="260" y1="30" x2="320" y2="20" stroke="#30d158" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="40" cy="90" r="5" fill="#30d158"/>
+                <circle cx="320" cy="20" r="5" fill="#e8c547"/>
+                <circle cx="195" cy="48" r="6" fill="#fff"/>
+              </svg>
+              <div style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:5px">
+                <div style="width:5px;height:5px;border-radius:50%;background:#30d158"></div>
+                <span style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:500;letter-spacing:0.08em">LIVE</span>
+              </div>
+              <div style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:4px 10px">
+                <span style="font-size:9px;color:rgba(255,255,255,0.6)">37,400 ft · 487 mph</span>
+              </div>
+            </div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+              <div style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px">
+                <div style="font-size:9px;color:#3b7dd8;font-weight:600;letter-spacing:0.08em;margin-bottom:5px">RIGHT NOW IN THE COCKPIT</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.65);line-height:1.6">Autopilot is flying. Crew monitoring weather ahead. Smooth skies until Cleveland.</div>
+              </div>
+              <div style="background:rgba(255,159,10,0.08);border:0.5px solid rgba(255,159,10,0.2);border-left:3px solid #ff9f0a;border-radius:12px;padding:12px">
+                <div style="font-size:9px;color:#ff9f0a;font-weight:600;letter-spacing:0.08em;margin-bottom:4px">TURBULENCE AHEAD · LIGHT</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.6)">Some bumps over the Great Lakes — about 18 min, then smooth.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hiw-step">
+      <div class="hiw-step-left">
+        <div class="hiw-num">03</div>
+      </div>
+      <div class="hiw-step-right">
+        <div class="hiw-step-label">Any time you want answers</div>
+        <div class="hiw-step-title">Ask Captain AI anything</div>
+        <div class="hiw-step-body">Hear an unfamiliar sound? Wondering about the turbulence? Want to know why you're circling? Just ask. Captain AI responds with a clear, honest explanation written the way an experienced pilot would tell it to you — in seconds.</div>
+        <div class="hiw-tags">
+          <span class="hiw-tag">Sound explanations</span>
+          <span class="hiw-tag">Turbulence check</span>
+          <span class="hiw-tag">Any question</span>
+        </div>
+        <div class="mock-screen">
+          <div class="mock-header">
+            <div class="mock-dots"><span></span><span></span><span></span></div>
+            <div class="mock-title">Captain AI</div>
+          </div>
+          <div class="mock-body" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="align-self:flex-end;background:rgba(59,125,216,0.2);border:0.5px solid rgba(59,125,216,0.3);border-radius:14px 14px 3px 14px;padding:10px 13px;max-width:80%">
+              <div style="font-size:12px;color:rgba(255,255,255,0.85)">What was that loud thunk after takeoff?</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:26px;height:26px;border-radius:50%;background:rgba(59,125,216,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="11" height="11" viewBox="0 0 44 44" fill="none"><path d="M22 2 L27 22 L22 42 L17 22 Z" fill="#fff"/><path d="M2 22 L22 17 L42 22 L22 27 Z" fill="#3b7dd8"/><circle cx="22" cy="22" r="3" fill="#3b7dd8"/></svg>
+              </div>
+              <div style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px 14px 14px 3px;padding:10px 13px;max-width:85%">
+                <div style="font-size:9px;color:#e8c547;font-weight:600;letter-spacing:0.08em;margin-bottom:5px">CAPT. AI</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.75);line-height:1.6">That's the landing gear folding into the belly of the plane. Three sets of wheels, all locked up tight. Pilots love that sound — means everything worked perfectly.</div>
+              </div>
+            </div>
+            <div style="align-self:flex-end;background:rgba(59,125,216,0.2);border:0.5px solid rgba(59,125,216,0.3);border-radius:14px 14px 3px 14px;padding:10px 13px;max-width:80%">
+              <div style="font-size:12px;color:rgba(255,255,255,0.85)">Explain this turbulence</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:26px;height:26px;border-radius:50%;background:rgba(59,125,216,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="11" height="11" viewBox="0 0 44 44" fill="none"><path d="M22 2 L27 22 L22 42 L17 22 Z" fill="#fff"/><path d="M2 22 L22 17 L42 22 L22 27 Z" fill="#3b7dd8"/><circle cx="22" cy="22" r="3" fill="#3b7dd8"/></svg>
+              </div>
+              <div style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:14px 14px 14px 3px;padding:10px 13px;max-width:85%">
+                <div style="font-size:9px;color:#e8c547;font-weight:600;letter-spacing:0.08em;margin-bottom:5px">CAPT. AI</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.75);line-height:1.6">Light chop over northern Ohio — pilots ahead filed reports. About 18 more minutes then smooth all the way into Cleveland. Belt stays on, but this is nothing.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- AIRPORT INTEL -->
+<section class="features" id="intel" style="max-width:960px">
+  <div class="section-label">Airport intelligence</div>
+  <div class="section-title">Finally understand what's<br>happening on the ground</div>
+  <p class="section-subtitle">Awaire reads live FAA data, NOTAMs, and weather observations for both your departure and arrival airports — then explains what it actually means for your flight.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+
+    <!-- Delay explainer mock -->
+    <div style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden">
+      <div style="padding:20px 20px 0">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;color:rgba(255,255,255,0.3);margin-bottom:12px">DELAY INTELLIGENCE</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+          <div style="font-size:18px;font-weight:500;color:#fff;line-height:1.3;max-width:70%">Fog forcing single-runway ops at San Francisco</div>
+          <div style="padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;background:rgba(255,159,10,0.12);border:0.5px solid rgba(255,159,10,0.3);color:#ff9f0a;flex-shrink:0">Moderate</div>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.65;margin-bottom:10px">
+          SFO is operating on 28L only due to fog and the FAA's new parallel approach restriction. The airport's maximum arrival rate is currently 36 aircraft per hour — down from the normal 54.
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;padding:10px 12px;background:rgba(255,255,255,0.03);border-left:2px solid rgba(255,159,10,0.4);border-radius:0 8px 8px 0;margin-bottom:14px">
+          With one-third less capacity, aircraft are sequenced further out over the Pacific. Your arrival slot may push 25–40 minutes depending on traffic volume at departure time.
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding-bottom:18px">
+          <div style="width:6px;height:6px;border-radius:50%;background:#30d158"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.25)">High confidence — METAR, NOTAM, and NASSTATUS data</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather mock -->
+    <div style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;color:rgba(255,255,255,0.3);margin-bottom:14px">AIRPORT CONDITIONS</div>
+
+      <!-- Departure -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#e8c547;margin-bottom:8px">DEPARTURE · SAN</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.65">
+          San Diego is seeing clear skies with northwest winds at 11 knots. Visibility 10+ miles. Temperature 67°F. Runway 27 active for departures — excellent conditions.
+        </div>
+      </div>
+
+      <div style="height:0.5px;background:rgba(255,255,255,0.06);margin-bottom:14px"></div>
+
+      <!-- Arrival -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#2dd4bf;margin-bottom:8px">ARRIVAL · SFO</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.65">
+          San Francisco is reporting fog with ceiling at 400 feet and visibility 1.5 miles. ILS approaches to 28L in use. Winds calm. Conditions may improve by your arrival window.
+        </div>
+      </div>
+
+      <div style="height:0.5px;background:rgba(255,255,255,0.06);margin-bottom:14px"></div>
+
+      <!-- FAA status -->
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6">
+          FAA Ground Delay Program active at SFO — average delay 34 minutes. No programs at SAN.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom explainer row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    <div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:18px">
+      <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:6px">Reads live NOTAMs</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6">NOTAMs contain the real operational picture — runway closures, approach restrictions, taxiway changes. Awaire parses them and explains them in plain English, live.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:18px">
+      <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:6px">No training knowledge</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6">Claude is explicitly prevented from using outdated training data for airport operations. Every statement about current conditions comes from live data fetched right now.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:18px">
+      <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:6px">Both airports, every flight</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6">Departure and arrival conditions shown side by side — so you understand what's happening at both ends of your flight, not just where you're sitting right now.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DATA SOURCES -->
+<section class="data-sources" id="data">
+  <div class="section-label">Powered by</div>
+  <div class="section-title">Real aviation data. Not guesswork.</div>
+  <p class="section-subtitle">Every piece of data in Awaire comes from the same sources pilots and air traffic controllers use every day.</p>
+  <div class="sources-grid">
+    <div class="source-card">
+      <div class="source-name">PIREP Network <span class="source-free">FREE</span></div>
+      <div class="source-org">NOAA Aviation Weather Center</div>
+      <div class="source-desc">Pilot weather reports filed in real time by commercial and private pilots — filtered to your exact route, altitude, and the last 60 minutes only.</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">METAR & TAF <span class="source-free">FREE</span></div>
+      <div class="source-org">NOAA Aviation Weather Center</div>
+      <div class="source-desc">Surface weather observations and terminal forecasts updated every hour from thousands of airports nationwide.</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">FAA System Status <span class="source-free">FREE</span></div>
+      <div class="source-org">FAA NASSTATUS</div>
+      <div class="source-desc">Ground delay programs, ground stops, airspace flow programs, and airport capacity restrictions — live from the FAA.</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">NOTAM System <span class="source-free">FREE</span></div>
+      <div class="source-org">FAA NOTAM API</div>
+      <div class="source-desc">Notices to air missions — runway closures, airspace restrictions, approach procedure changes at every airport. Claude reads these directly, no hardcoding.</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">Live Flight Tracking <span class="source-paid">COMMERCIAL</span></div>
+      <div class="source-org">FlightAware AeroAPI</div>
+      <div class="source-desc">Real-time ADS-B positions, departure and arrival data, inbound aircraft tracking, and tail number lookup from the world's leading aviation data provider.</div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">AI Interpretation <span class="source-paid">COMMERCIAL</span></div>
+      <div class="source-org">Anthropic Claude</div>
+      <div class="source-desc">Every data point translated into plain English. Claude interprets live data only — it is explicitly prevented from using training knowledge for airport operations.</div>
+    </div>
+  </div>
+  <div class="sources-note">Free government sources used at no cost. Commercial sources power live tracking and AI interpretation.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FOUNDER -->
+<section class="founder" id="about">
+  <div class="founder-card">
+    <div class="founder-avatar">B</div>
+    <div>
+      <div class="founder-label">About the founder</div>
+      <div class="founder-quote">"The things that feel uncertain as a passenger are usually completely understood in the cockpit."</div>
+      <div class="founder-body">
+        <p>I'm a commercial pilot based in Northern California — and before aviation became a career, it was something I was genuinely uneasy about. Flying felt unpredictable. Every sound, every bump, every delay felt like something I didn't fully understand.</p>
+        <p>So I started trying to figure it out. I taught myself how flying actually works — what pilots are doing during each phase of a flight, how decisions are made, what all the sounds mean. Hours of videos, studying pilot workflows, Microsoft Flight Simulator. What started as a way to make flying feel less intimidating turned into a real interest in aviation — and eventually led me to flight training.</p>
+        <p>I've now been a pilot for over five years. Over that time I found myself naturally helping friends and family understand their flights using the same FAA data, weather briefings, and operational insights that pilots rely on. Explaining what's happening — and why — consistently changes how they experience flying.</p>
+        <p>I built Awaire to close that gap. Not to overwhelm people with aviation data, but to help them understand what's happening and why — and make traveling more enjoyable because of it.</p>
+      </div>
+      <div class="founder-sig">
+        <strong>Bennett</strong>
+        <span>Commercial pilot · Northern California · Founder, Awaire</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="section-label">Pricing</div>
+  <div class="section-title">Free now. Simple pricing later.</div>
+  <p class="section-subtitle">Awaire is completely free during beta. When the iOS app launches, here's what pricing will look like.</p>
+  <div class="pricing-grid">
+    <div class="price-card" style="border-color:rgba(232,197,71,0.3);background:rgba(232,197,71,0.05)">
+      <div class="price-badge-green">Available now</div>
+      <div class="price-name">Free beta</div>
+      <div class="price-amount" style="color:#e8c547">$0</div>
+      <div class="price-period">full access · no card needed</div>
+      <div class="price-desc">Everything unlocked during beta. Help shape the product before the iOS launch.</div>
+      <button class="price-btn price-btn-gold" onclick="window.location.href='/app?mode=signup'">Join free beta</button>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">Best value · iOS launch</div>
+      <div class="price-name">Annual</div>
+      <div class="price-amount">$59.99</div>
+      <div class="price-period">per year · just $5/month</div>
+      <div class="price-desc">Best value for regular travelers. Beta users get early access and priority when we launch.</div>
+      <button class="price-btn price-btn-blue" onclick="window.location.href='/app?mode=signup'">Join beta now</button>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Monthly</div>
+      <div class="price-amount">$6.99</div>
+      <div class="price-period">per month · first month free</div>
+      <div class="price-desc">Full access month to month. First month completely free when we launch subscriptions.</div>
+      <button class="price-btn price-btn-ghost" onclick="window.location.href='/app?mode=signup'">Join beta now</button>
+    </div>
+  </div>
+  <div class="pricing-note">7-day travel pass also available at $1.99 · All plans include Captain AI, live turbulence, phase narration, and sound explanations</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Take it on your next flight.</h2>
+  <p>Free during beta. The iOS app launches in a few months.</p>
+  <a class="btn-primary" href="/app?mode=signup" style="font-size:17px;padding:18px 48px;display:inline-block">Join the free beta</a>
+  <div class="cta-note">No credit card · No commitment · Full access during beta</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#">
+    <svg width="20" height="20" viewBox="0 0 44 44" fill="none">
+      <path d="M22 2 L27 22 L22 42 L17 22 Z" fill="#ffffff" opacity="0.8"/>
+      <path d="M2 22 L22 17 L42 22 L22 27 Z" fill="#ffffff" opacity="0.8"/>
+      <circle cx="22" cy="22" r="4" fill="#3b7dd8"/>
+    </svg>
+    Aw<span class="air">air</span>e
+  </a>
+  <div class="footer-links">
+    <a onclick="document.getElementById('beta').scrollIntoView({behavior:'smooth'})">Beta</a>
+    <a onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+    <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</a>
+    <a onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">About</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </div>
+  <div class="footer-copy">© 2026 Awaire · For passengers, built by pilots · iOS app coming soon</div>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80)
+})
+</script>
+
+</body>
+</html>
