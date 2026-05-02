@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awaire: Every flight, explained.</title>
+<style>
+@import url('https://fonts.cdnfonts.com/css/sohne');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  /* site colors */
+  --bg:#070c18;
+  --n2:#0d1422;
+  --n3:#111827;
+  --bdr:rgba(255,255,255,0.07);
+  --bdr2:rgba(255,255,255,0.11);
+  --w:#ffffff;
+  --w80:rgba(255,255,255,0.80);
+  --w55:rgba(255,255,255,0.55);
+  --w35:rgba(255,255,255,0.35);
+  --w15:rgba(255,255,255,0.15);
+  --blue:#4a7cf7;
+  --blue2:#6b96ff;
+  --blues:rgba(74,124,247,0.12);
+  --orange:#f5a43a;
+  --green:#30d158;
+  --red:#ff453a;
+  --f:'Söhne','Sohne',ui-sans-serif,-apple-system,'Helvetica Neue',sans-serif;
+
+  /* exact app colors */
+  --app-bg:#0d1422;
+  --app-card:#161e2e;
+  --app-card2:#1a2438;
+  --app-card3:#1e2a40;
+  --app-border:rgba(255,255,255,0.08);
+  --app-border2:rgba(255,255,255,0.12);
+  --app-label:#7a8fa6;
+  --app-blue:#4a7cf7;
+  --app-blue-dim:#2d4fa3;
+  --app-orange:#f5a43a;
+  --app-green:#30d158;
+  --app-red:#ff453a;
+  --app-text:#e8edf5;
+  --app-text2:#a0aec0;
+  --app-text3:#5a6a80;
+}
+
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--w);font-family:var(--f);overflow-x:hidden;cursor:none;}
+
+.cur{position:fixed;width:7px;height:7px;background:var(--blue);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen;transition:transform .15s;}
+.cur-r{position:fixed;width:32px;height:32px;border:1.5px solid rgba(74,124,247,.4);border-radius:50%;pointer-events:none;z-index:9998;transition:width .3s,height .3s,border-color .25s;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");pointer-events:none;z-index:998;opacity:.5;}
+
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(140px);}
+.o1{width:700px;height:700px;background:rgba(74,124,247,.07);top:-200px;left:-150px;animation:dr 20s ease-in-out infinite alternate;}
+.o2{width:550px;height:550px;background:rgba(245,164,58,.04);bottom:-150px;right:-100px;animation:dr 27s ease-in-out infinite alternate;animation-delay:-12s;}
+@keyframes dr{from{transform:translate(0,0);}to{transform:translate(50px,30px)scale(1.08);}}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;}
+.nbg{position:absolute;inset:0;background:rgba(7,12,24,.82);backdrop-filter:blur(32px) saturate(160%);-webkit-backdrop-filter:blur(32px) saturate(160%);border-bottom:1px solid var(--bdr);}
+.nlogo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--w);position:relative;z-index:1;}
+.nstar svg{width:19px;height:19px;}
+.nname{font-size:16px;font-weight:500;letter-spacing:-.25px;}
+.nname em{color:var(--blue);font-style:normal;}
+.nlinks{display:flex;align-items:center;gap:28px;position:relative;z-index:1;}
+.nlinks a{color:var(--w35);text-decoration:none;font-size:13.5px;transition:color .2s;}
+.nlinks a:hover{color:var(--w);}
+.nbtn{background:var(--blue)!important;color:var(--w)!important;padding:8px 20px;border-radius:100px;font-weight:500!important;transition:opacity .2s,transform .2s!important;}
+.nbtn:hover{opacity:.85;transform:scale(.97)!important;}
+
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
+.rv.on{opacity:1;transform:translateY(0);}
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}.d4{transition-delay:.4s;}
+@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:140px 24px 80px;position:relative;z-index:1;}
+.badge{display:inline-flex;align-items:center;gap:7px;background:var(--blues);border:1px solid rgba(74,124,247,.2);border-radius:100px;padding:5px 15px;font-size:11px;font-weight:500;color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:30px;opacity:0;animation:up .8s .1s forwards;}
+.bdot{width:5px;height:5px;background:var(--blue);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.7);}}
+.hero-h{font-size:clamp(58px,9vw,110px);font-weight:500;line-height:1.0;letter-spacing:-3.5px;max-width:980px;margin-bottom:24px;opacity:0;animation:up .9s .3s forwards;}
+.hero-h em{font-style:italic;font-weight:300;color:var(--w55);}
+.hero-sub{font-size:17px;font-weight:300;color:var(--w55);max-width:420px;line-height:1.7;margin-bottom:44px;opacity:0;animation:up .9s .5s forwards;}
+.hero-btns{display:flex;align-items:center;gap:14px;margin-bottom:90px;opacity:0;animation:up .9s .65s forwards;}
+.btn-p{background:var(--blue);color:#fff;padding:13px 30px;border-radius:100px;font-size:14px;font-weight:500;text-decoration:none;letter-spacing:-.1px;transition:transform .2s,box-shadow .2s;box-shadow:0 0 44px rgba(74,124,247,.35);}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 0 64px rgba(74,124,247,.55);}
+.btn-g{color:var(--w55);font-size:14px;text-decoration:none;transition:color .2s;}
+.btn-g:hover{color:var(--w);}
+
+/* HERO BRAND — minimal centered brand mark + rotating headline */
+.hero-brand{
+  display:flex;align-items:center;justify-content:center;gap:18px;
+  opacity:0;animation:up 1s .15s forwards;
+  margin-bottom:34px;
+}
+.hero-brand svg{width:54px;height:54px;flex-shrink:0;filter:drop-shadow(0 0 28px rgba(74,124,247,.4));}
+.hero-brand span{
+  font-size:54px;font-weight:500;letter-spacing:-2px;color:var(--w);
+  line-height:1;
+}
+.hero-brand em{color:var(--blue);font-style:normal;}
+
+/* Rotating headline */
+.hero-rotate{
+  position:relative;
+  height:clamp(70px,11vw,140px);
+  display:flex;align-items:center;justify-content:center;
+  width:100%;max-width:980px;
+  opacity:0;animation:up 1s .35s forwards;
+}
+.hero-phrase{
+  position:absolute;
+  font-size:clamp(48px,8.5vw,104px);
+  font-weight:500;line-height:1.0;letter-spacing:-3px;
+  text-align:center;
+  white-space:nowrap;
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+  padding:0 16px;
+}
+.hero-phrase em{font-style:italic;font-weight:300;color:var(--w55);}
+.hero-phrase.active{
+  opacity:1;
+  transform:translateY(0);
+}
+.hero-phrase.exiting{
+  opacity:0;
+  transform:translateY(-18px);
+}
+
+/* MARQUEE */
+.mq{padding:48px 0;overflow:hidden;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);position:relative;z-index:1;}
+.mq-t{display:flex;gap:40px;animation:mroll 24s linear infinite;width:max-content;}
+.mq-t:hover{animation-play-state:paused;}
+@keyframes mroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.mq-i{font-size:21px;font-weight:300;color:var(--w15);white-space:nowrap;display:flex;align-items:center;gap:40px;font-style:italic;}
+.mq-i b{font-weight:500;color:var(--w35);font-style:normal;}
+.mq-s{width:4px;height:4px;border-radius:50%;background:var(--w15);flex-shrink:0;}
+
+/* SECTION */
+.sec{position:relative;z-index:1;}
+.pad{padding:128px 48px;}
+.slabel{display:inline-block;font-size:10.5px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:var(--blue);margin-bottom:16px;}
+.sh{font-size:clamp(36px,4.5vw,62px);font-weight:500;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;}
+.sh em{font-style:italic;font-weight:300;color:var(--w55);}
+.ssub{font-size:16px;font-weight:300;color:var(--w35);max-width:440px;line-height:1.7;}
+
+/* FEATURE ROW */
+.feat-wrap{max-width:1140px;margin:0 auto;}
+.feat-hd{text-align:center;margin-bottom:80px;}
+.feat-row{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;margin-bottom:120px;padding:0 24px;}
+.feat-row.rev{direction:rtl;}
+.feat-row.rev>*{direction:ltr;}
+.feat-copy .num{font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--w35);margin-bottom:14px;}
+.feat-copy .title{font-size:clamp(26px,3.2vw,40px);font-weight:500;letter-spacing:-1px;line-height:1.15;margin-bottom:16px;}
+.feat-copy .title em{font-style:italic;font-weight:300;color:var(--w55);}
+.feat-copy .desc{font-size:15px;font-weight:300;color:var(--w35);line-height:1.75;margin-bottom:24px;}
+.feat-pills{display:flex;flex-wrap:wrap;gap:7px;}
+.fp{background:rgba(255,255,255,0.05);border:1px solid var(--bdr2);border-radius:100px;padding:5px 13px;font-size:11.5px;color:var(--w55);}
+.fp-b{background:rgba(74,124,247,0.12);border-color:rgba(74,124,247,0.25);color:var(--blue2);}
+
+/* ════════════════════════════
+   APP MOCKUP , matches real UI
+════════════════════════════ */
+.app-mockup{
+  background:var(--app-bg);
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:0 48px 96px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.09);
+  transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s;
+  font-size:13px;
+  color:var(--app-text);
+  position:relative;
+}
+.app-mockup:hover{
+  transform:perspective(1000px) rotateY(-4deg) rotateX(2deg) translateY(-8px);
+  box-shadow:0 64px 120px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.12);
+}
+
+/* top nav bar , matches "Change | UAL2121 SEA→SFO | +Track | star | chat" */
+.app-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 10px;
+  border-bottom:1px solid var(--app-border);
+}
+.app-nav-change{font-size:11px;font-weight:400;color:var(--app-text2);background:rgba(255,255,255,0.07);padding:4px 10px;border-radius:100px;}
+.app-nav-flight{font-size:12px;font-weight:600;color:var(--app-blue);text-align:center;}
+.app-nav-route{font-size:10.5px;font-weight:400;color:var(--app-text2);text-align:center;}
+.app-nav-right{display:flex;align-items:center;gap:8px;}
+.app-nav-track{font-size:10.5px;color:var(--app-text2);}
+.app-nav-icon{width:28px;height:28px;background:rgba(255,255,255,0.07);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* scrollable content area */
+.app-body{padding:0 12px;overflow:hidden;}
+
+/* standard dark card , matches the rounded cards in screenshots */
+.a-card{
+  background:var(--app-card);
+  border:1px solid var(--app-border);
+  border-radius:18px;
+  padding:14px 16px;
+  margin-bottom:10px;
+}
+.a-card:first-child{margin-top:12px;}
+
+/* section label , "DELAY INTELLIGENCE", "YOUR BRIEFING" etc */
+.a-section-label{
+  font-size:9.5px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--app-label);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+/* severity pill , "Minor", "Significant", "On Track" */
+.a-pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:100px;letter-spacing:.3px;}
+.a-pill-orange{background:rgba(245,164,58,0.18);color:var(--app-orange);}
+.a-pill-red{background:rgba(255,69,58,0.18);color:var(--app-red);}
+.a-pill-green{background:rgba(48,209,88,0.18);color:var(--app-green);}
+.a-pill-blue{background:rgba(74,124,247,0.18);color:var(--app-blue);}
+
+/* card title , bold, white, 15-16px */
+.a-title{font-size:14px;font-weight:600;line-height:1.35;margin-bottom:8px;color:var(--app-text);}
+
+/* card body text */
+.a-body{font-size:12px;font-weight:400;line-height:1.6;color:var(--app-text2);}
+
+/* indented quote box inside delay card */
+.a-quote{
+  background:rgba(255,255,255,0.04);
+  border-radius:12px;
+  padding:10px 12px;
+  margin:10px 0;
+  font-size:11.5px;line-height:1.6;color:var(--app-text3);
+}
+
+/* left accent border , delay cards */
+.a-card-orange{border-left:2.5px solid var(--app-orange);}
+.a-card-red{border-left:2.5px solid var(--app-red);}
+.a-card-green{border-left:2.5px solid var(--app-green);}
+
+/* airport header row */
+.a-airports{display:flex;align-items:baseline;gap:8px;margin-bottom:2px;}
+.a-airport{font-size:30px;font-weight:600;letter-spacing:-1px;color:var(--app-text);}
+.a-arrow{font-size:18px;color:var(--app-text3);}
+.a-delay-tag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;margin-left:auto;}
+.a-delay-tag-red{background:rgba(255,69,58,0.22);color:var(--app-red);}
+.a-delay-tag-orange{background:rgba(245,164,58,0.22);color:var(--app-orange);}
+.a-airline{font-size:11.5px;color:var(--app-text3);margin-bottom:12px;}
+.a-divider{height:1px;background:var(--app-border);margin:10px 0;}
+.a-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.a-col-label{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--app-text3);margin-bottom:3px;}
+.a-col-val{font-size:13.5px;font-weight:600;color:var(--app-text);}
+.a-col-val.orange{color:var(--app-orange);}
+.a-col-sub{font-size:10px;color:var(--app-text3);text-decoration:line-through;}
+
+/* departure countdown */
+.a-countdown-label{font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--app-orange);text-align:center;margin-bottom:6px;}
+.a-countdown{display:flex;align-items:baseline;justify-content:center;gap:4px;}
+.a-countdown-num{font-size:44px;font-weight:300;letter-spacing:-2px;color:var(--app-text);}
+.a-countdown-unit{font-size:16px;font-weight:300;color:var(--app-text3);}
+.a-countdown-sub{font-size:11px;color:var(--app-text3);text-align:center;margin-top:4px;}
+
+/* ride bar , segmented, thick */
+.a-ride-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.a-ride-title{font-size:14px;font-weight:600;}
+.a-ride-bar-wrap{margin:6px 0;}
+.a-ride-bar{display:flex;gap:2px;border-radius:6px;overflow:hidden;height:9px;}
+.a-rb{flex:1;}
+.a-rb-g{background:var(--app-green);}
+.a-rb-o{background:var(--app-orange);}
+.a-rb-r{background:var(--app-red);}
+.a-rb-dim{background:rgba(255,255,255,0.1);}
+.a-ride-bar-ends{display:flex;justify-content:space-between;font-size:9.5px;color:var(--app-text3);margin-top:3px;}
+
+/* PIREP card , orange left border */
+.a-pirep{
+  background:var(--app-card);border:1px solid var(--app-border);
+  border-left:2.5px solid var(--app-orange);
+  border-radius:14px;padding:11px 13px;margin-bottom:8px;
+}
+.a-pirep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.a-pirep-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-orange);}
+.a-pirep-time{font-size:9.5px;color:var(--app-text3);}
+.a-pirep-loc{font-size:11px;color:var(--app-blue);margin-bottom:4px;}
+.a-pirep-text{font-size:11px;font-style:italic;color:var(--app-text2);line-height:1.5;}
+
+/* ride assessment card , slightly blue tinted */
+.a-ride-assess{
+  background:rgba(74,124,247,0.06);
+  border:1px solid rgba(74,124,247,0.14);
+  border-radius:14px;padding:12px 14px;margin-bottom:8px;
+}
+.a-ride-assess-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-blue);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+
+/* cockpit card */
+.a-cockpit{
+  background:rgba(74,124,247,0.05);
+  border:1px solid rgba(74,124,247,0.12);
+  border-radius:14px;padding:12px 14px;margin-bottom:8px;
+}
+.a-cockpit-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-blue);margin-bottom:7px;}
+
+/* phase of flight */
+.a-phase-label{font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--app-green);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.a-phase-label::before{content:'';width:7px;height:7px;background:var(--app-green);border-radius:50%;flex-shrink:0;}
+.a-phase-big{font-size:28px;font-weight:600;letter-spacing:-1px;margin-bottom:2px;}
+.a-phase-sub{font-size:12px;color:var(--app-text2);margin-bottom:10px;}
+.a-phase-bar{display:flex;gap:4px;margin-bottom:5px;}
+.a-pb{height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,0.12);}
+.a-pb.done{background:rgba(74,124,247,0.5);}
+.a-pb.now{background:var(--app-blue);}
+.a-phase-next{font-size:10.5px;color:var(--app-text3);}
+.a-phase-next span{color:var(--app-text2);}
+
+/* briefing bullet */
+.a-brief-row{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;font-size:12px;color:var(--app-text2);}
+.a-brief-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+
+/* capt AI inside briefing */
+.a-capt-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-blue);margin-bottom:5px;}
+.a-capt-text{font-size:12px;font-style:italic;color:var(--app-text2);line-height:1.55;}
+
+/* AI chat screen */
+.a-chat{padding:12px;}
+.a-user-bubble{background:var(--app-blue-dim);border-radius:16px 16px 4px 16px;padding:10px 13px;font-size:12px;line-height:1.5;margin-bottom:10px;margin-left:30px;color:var(--app-text);}
+.a-ai-bubble{background:var(--app-card2);border:1px solid var(--app-border);border-radius:4px 16px 16px 16px;padding:12px 14px;font-size:12px;line-height:1.65;color:var(--app-text2);}
+.a-ai-name{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-blue);margin-bottom:6px;}
+.a-ask-bar{background:rgba(255,255,255,0.06);border-radius:100px;padding:9px 14px;font-size:12px;color:var(--app-text3);margin:10px 12px;}
+
+/* tab bar , matches exactly */
+.a-tabs{
+  display:flex;align-items:center;justify-content:space-around;
+  background:rgba(255,255,255,0.04);
+  border-top:1px solid var(--app-border);
+  padding:9px 8px;
+  gap:4px;
+}
+.a-tab{
+  font-size:11.5px;font-weight:400;color:var(--app-text3);
+  padding:5px 10px;border-radius:100px;white-space:nowrap;
+}
+.a-tab.on{
+  background:var(--app-blue-dim);
+  color:var(--w);font-weight:500;
+}
+/* the orange dot on Now tab */
+.a-tab-dot{width:5px;height:5px;background:var(--app-orange);border-radius:50%;display:inline-block;margin-left:2px;vertical-align:middle;}
+
+/* ── stats ── */
+.stats{background:rgba(255,255,255,.02);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
+.stats-in{max-width:880px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:40px;text-align:center;padding:72px 24px;}
+.sn{font-size:clamp(52px,7vw,80px);font-weight:500;letter-spacing:-4px;line-height:1;margin-bottom:10px;}
+.sn sub{font-size:.4em;color:var(--w35);letter-spacing:0;}
+.sl{font-size:13px;font-weight:300;color:var(--w35);line-height:1.6;max-width:180px;margin:0 auto;}
+
+/* sources */
+.src-grid{max-width:1060px;margin:56px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.sc{background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:20px;padding:24px;transition:transform .25s;}
+.sc:hover{transform:translateY(-3px);}
+.sc-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);margin-bottom:13px;}
+.sc-name{font-size:13px;font-weight:500;color:var(--w80);margin-bottom:5px;}
+.sc-desc{font-size:12px;font-weight:300;color:var(--w35);line-height:1.55;}
+
+/* pricing */
+.pg{max-width:840px;margin:56px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start;}
+.pc{background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:22px;padding:28px;position:relative;}
+.pc.feat{background:rgba(74,124,247,.08);border-color:rgba(74,124,247,.25);}
+.pc-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:10px;font-weight:600;letter-spacing:.5px;padding:3px 12px;border-radius:100px;white-space:nowrap;}
+.pc-name{font-size:10.5px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--w35);margin-bottom:10px;}
+.pc-amt{font-size:48px;font-weight:500;letter-spacing:-3px;line-height:1;margin-bottom:4px;}
+.pc-amt sup{font-size:.38em;vertical-align:super;color:var(--w35);letter-spacing:0;}
+.pc-period{font-size:12px;font-weight:300;color:var(--w35);margin-bottom:22px;}
+.pc-cta{display:block;text-align:center;padding:11px;border-radius:100px;font-size:13.5px;font-weight:500;text-decoration:none;transition:all .2s;margin-bottom:20px;}
+.pc-p{background:var(--blue);color:#fff;}.pc-p:hover{opacity:.85;}
+.pc-g{background:rgba(255,255,255,.05);border:1px solid var(--bdr);color:var(--w55);}.pc-g:hover{background:rgba(255,255,255,.08);}
+.pc-feats{list-style:none;}
+.pc-feats li{font-size:12.5px;font-weight:300;color:var(--w35);padding:5px 0;display:flex;align-items:center;gap:7px;}
+.pc-feats li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--blue);opacity:.6;flex-shrink:0;}
+
+/* faq */
+.faq-list{max-width:720px;margin:56px auto 0;}
+.faq-item{border-bottom:1px solid var(--bdr);}
+.faq-q{width:100%;background:none;border:none;color:var(--w80);font-family:var(--f);font-size:15px;font-weight:400;text-align:left;padding:22px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;transition:color .2s;}
+.faq-q:hover{color:var(--w);}
+.faq-arr{font-size:20px;color:var(--w35);transition:transform .3s;flex-shrink:0;}
+.faq-item.open .faq-arr{transform:rotate(45deg);}
+.faq-a{font-size:14px;font-weight:300;color:var(--w35);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.16,1,.3,1),padding .3s;}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:20px;}
+
+/* cta */
+.cta{text-align:center;padding:160px 24px;position:relative;overflow:hidden;}
+.cta-glow{position:absolute;width:700px;height:700px;background:radial-gradient(circle,rgba(74,124,247,.09) 0%,transparent 68%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.cta-h{font-size:clamp(52px,8.5vw,100px);font-weight:500;line-height:1.0;letter-spacing:-4px;margin-bottom:20px;position:relative;}
+.cta-h em{font-style:italic;font-weight:300;color:var(--w55);}
+.cta-sub{font-size:16.5px;font-weight:300;color:var(--w35);margin-bottom:44px;}
+
+footer{border-top:1px solid var(--bdr);padding:36px 48px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
+.fl{display:flex;align-items:center;gap:8px;color:var(--w35);font-size:13px;text-decoration:none;}
+.flinks{display:flex;gap:22px;}
+.flinks a{color:var(--w35);font-size:12.5px;text-decoration:none;transition:color .2s;}
+.flinks a:hover{color:var(--w);}
+.fcopy{font-size:11.5px;color:rgba(255,255,255,.15);}
+
+@media(max-width:900px){
+  nav{padding:14px 20px;}.nlinks a:not(.nbtn){display:none;}
+  .pad{padding:80px 20px;}
+  .feat-row{grid-template-columns:1fr;gap:40px;}
+  .feat-row.rev{direction:ltr;}
+  .stats-in{grid-template-columns:1fr;gap:28px;}
+  .src-grid,.pg{grid-template-columns:1fr;}
+  .ph-l,.ph-r{display:none;}.ph-c{width:200px;height:432px;}.hphones{height:460px;}
+  .hero-brand{gap:12px;margin-bottom:28px;}
+  .hero-brand svg{width:38px;height:38px;}
+  .hero-brand span{font-size:40px;letter-spacing:-1.5px;}
+  .hero-rotate{height:clamp(120px,30vw,200px);}
+  .hero-phrase{white-space:normal;font-size:clamp(38px,9vw,64px);letter-spacing:-1.8px;}
+  footer{flex-direction:column;gap:16px;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="cur" id="cur"></div>
+<div class="cur-r" id="curR"></div>
+<div class="amb"><div class="orb o1"></div><div class="orb o2"></div></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nbg"></div>
+  <a href="#" class="nlogo">
+    <div class="nstar"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1L13.6 10.4L23 12L13.6 13.6L12 23L10.4 13.6L1 12L10.4 10.4Z" fill="white"/><circle cx="12" cy="12" r="1.4" fill="#4a7cf7"/></svg></div>
+    <span class="nname">Aw<em>air</em>e</span>
+  </a>
+  <div class="nlinks">
+    <a href="#features">Features</a>
+    <a href="#data">Data</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://awaireapp.com" class="nbtn">Try free →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge"><span class="bdot"></span>Free beta &nbsp;·&nbsp; iOS app coming soon</div>
+
+  <div class="hero-brand">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 1L13.6 10.4L23 12L13.6 13.6L12 23L10.4 13.6L1 12L10.4 10.4Z" fill="white"/><circle cx="12" cy="12" r="1.4" fill="#4a7cf7"/></svg>
+    <span>Aw<em>air</em>e</span>
+  </div>
+
+  <div class="hero-rotate" id="heroRotate">
+    <h1 class="hero-phrase active" data-i="0">Every flight, <em>explained.</em></h1>
+    <h1 class="hero-phrase" data-i="1">Know <em>why</em> you're delayed.</h1>
+    <h1 class="hero-phrase" data-i="2">Know what to <em>expect</em> in the air.</h1>
+    <h1 class="hero-phrase" data-i="3">That sound? <em>The landing gear.</em></h1>
+    <h1 class="hero-phrase" data-i="4">Ask anything. <em>Get a real answer.</em></h1>
+    <h1 class="hero-phrase" data-i="5">The cockpit, <em>in your pocket.</em></h1>
+    <h1 class="hero-phrase" data-i="6">No more <em>guessing</em> at the gate.</h1>
+    <h1 class="hero-phrase" data-i="7">Less wondering. <em>More knowing.</em></h1>
+    <h1 class="hero-phrase" data-i="8">Built <em>by pilots.</em></h1>
+  </div>
+
+  <div class="hero-btns" style="margin-top:50px;margin-bottom:0;">
+    <a href="https://awaireapp.com" class="btn-p">Get your briefing →</a>
+    <a href="#features" class="btn-g">See how it works ↓</a>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mq">
+  <div class="mq-t">
+    <div class="mq-i"><b>Pre-departure briefing</b><span class="mq-s"></span></div>
+    <div class="mq-i">Delay Intelligence<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Route Ride</b><span class="mq-s"></span></div>
+    <div class="mq-i">Captain AI<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Phase of flight</b><span class="mq-s"></span></div>
+    <div class="mq-i">Sounds explained<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Live FAA data</b><span class="mq-s"></span></div>
+    <div class="mq-i">Plain English<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Pre-departure briefing</b><span class="mq-s"></span></div>
+    <div class="mq-i">Delay Intelligence<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Route Ride</b><span class="mq-s"></span></div>
+    <div class="mq-i">Captain AI<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Phase of flight</b><span class="mq-s"></span></div>
+    <div class="mq-i">Sounds explained<span class="mq-s"></span></div>
+    <div class="mq-i"><b>Live FAA data</b><span class="mq-s"></span></div>
+    <div class="mq-i">Plain English<span class="mq-s"></span></div>
+  </div>
+</div>
+
+<!-- THE GAP -->
+<section class="sec pad" style="text-align:center;border-top:1px solid var(--bdr);">
+  <div class="rv">
+    <div class="slabel">The gap</div>
+    <h2 class="sh" style="max-width:800px;margin:0 auto 20px;">Millions of people fly every year with the same experience.<br><em>A lot happening, and very little explained.</em></h2>
+    <p class="ssub" style="margin:0 auto;max-width:560px;">The data that would make every flight better already exists in real time. Awaire puts it in your hands.</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stats-in">
+    <div class="rv"><div class="sn">880<sub>M+</sub></div><div class="sl">U.S. passengers fly every year with almost no real-time visibility into their flight</div></div>
+    <div class="rv d1"><div class="sn">1<sub>/3</sub></div><div class="sl">Travelers experience flight discomfort, almost always caused by lack of information, not the flight itself</div></div>
+    <div class="rv d2"><div class="sn">0</div><div class="sl">Consumer apps built to give passengers real flight intelligence in plain English. Until now</div></div>
+  </div>
+</div>
+
+<!-- DATA -->
+<section id="data" class="sec pad" style="text-align:center;">
+  <div class="rv"><div class="slabel">Powered by</div><h2 class="sh">Real aviation data.<br><em>Not guesswork.</em></h2><p class="ssub" style="margin:0 auto;">Every data point comes from the same sources pilots and controllers use every day.</p></div>
+  <div class="src-grid">
+    <div class="sc rv"><div class="sc-dot"></div><div class="sc-name">FAA System Status</div><div class="sc-desc">Ground delay programs, ground stops, and airspace flow restrictions, live from the FAA.</div></div>
+    <div class="sc rv d1"><div class="sc-dot"></div><div class="sc-name">Pilot Weather Reports (PIREPs)</div><div class="sc-desc">Filed in real time by commercial pilots along your exact route and altitude, filtered to your departure time.</div></div>
+    <div class="sc rv d2"><div class="sc-dot"></div><div class="sc-name">NOAA Aviation Weather</div><div class="sc-desc">METAR surface observations and terminal forecasts updated hourly from thousands of airports.</div></div>
+    <div class="sc rv d1"><div class="sc-dot"></div><div class="sc-name">FlightAware AeroAPI</div><div class="sc-desc">Real-time ADS-B positions, departure and arrival data, and inbound aircraft tracking.</div></div>
+    <div class="sc rv d2"><div class="sc-dot"></div><div class="sc-name">FAA NOTAM System</div><div class="sc-desc">Runway closures, airspace restrictions, and approach procedure changes at every airport.</div></div>
+    <div class="sc rv d3"><div class="sc-dot"></div><div class="sc-name">AI Interpretation</div><div class="sc-desc">Every data point translated into plain English. Explicitly prevented from using training data for live conditions.</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="sec pad">
+  <div class="feat-wrap">
+    <div class="feat-hd rv">
+      <div class="slabel">What Awaire does</div>
+      <h2 class="sh">A pilot,<br><em>in your pocket.</em></h2>
+    </div>
+
+    <!-- 01: PRE-DEPARTURE -->
+    <!-- 01: PRE-DEPARTURE -->
+    <div class="feat-row rv">
+      <div class="feat-copy">
+        <div class="num">01</div>
+        <h3 class="title">Your full flight picture,<br><em>before you leave home.</em></h3>
+        <p class="desc">Search your flight and get the full picture: on-time status, inbound aircraft tracking with live position and ETA, and a timeline of exactly what happens next. Know about the delay before the gate agent does.</p>
+        <div class="feat-pills"><span class="fp fp-b">Pre-departure briefing</span><span class="fp">Inbound aircraft</span><span class="fp">What Happens Next</span><span class="fp">Airport status</span></div>
+      </div>
+      <div class="app-mockup rv d1" style="max-width:340px;margin:0 auto;">
+        <div class="app-nav">
+          <span class="app-nav-change">Change</span>
+          <div style="text-align:center;"><div class="app-nav-flight">AW001</div><div class="app-nav-route">SFO → JFK</div></div>
+          <div class="app-nav-right"><div class="app-nav-icon">✦</div></div>
+        </div>
+        <div class="app-body">
+          <!-- map strip -->
+          <div style="background:#0a1020;border-radius:12px;height:80px;margin-bottom:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0a1020 0%,#0d1628 100%);"></div>
+            <div style="position:relative;width:90%;display:flex;align-items:center;">
+              <div style="width:10px;height:10px;background:var(--app-green);border-radius:50%;flex-shrink:0;box-shadow:0 0 8px var(--app-green);"></div>
+              <div style="flex:1;height:1px;background:rgba(255,255,255,0.15);margin:0 4px;border-top:1px dashed rgba(255,255,255,0.2);"></div>
+              <div style="width:8px;height:8px;background:var(--app-blue);border-radius:50%;flex-shrink:0;"></div>
+            </div>
+            <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">Planned route · Live tracking begins at pushback</div>
+          </div>
+          <!-- flight card -->
+          <div class="a-card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="font-size:22px;font-weight:600;letter-spacing:-.5px;">SFO <span style="font-size:16px;font-weight:300;color:var(--app-text2);">→</span> JFK</div>
+              <span style="background:rgba(48,209,88,0.15);border:1px solid rgba(48,209,88,0.3);color:var(--app-green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;">On time</span>
+            </div>
+            <div style="font-size:10px;color:var(--app-text3);margin-bottom:8px;">AW001 · B752</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:10px;color:var(--app-text3);margin-bottom:2px;"><span>DEPARTS</span><span>DURATION</span><span>ARRIVES</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:12px;font-weight:600;color:var(--app-text);"><span>9:30 AM</span><span>5h 20m</span><span>5:50 PM</span></div>
+          </div>
+          <!-- inbound aircraft card -->
+          <div class="a-card" style="padding:12px 14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--app-text3);">Your Inbound Aircraft &nbsp;<span style="color:var(--app-text3);font-weight:400;">N810AW</span></div>
+              <span style="background:rgba(48,209,88,0.15);border:1px solid rgba(48,209,88,0.3);color:var(--app-green);font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px;">On time</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;color:var(--app-text);margin-bottom:4px;">AW1234 <span style="font-size:12px;font-weight:300;color:var(--app-text2);">from Los Angeles</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--app-text2);">
+              <span><span style="color:var(--app-blue);font-size:8px;">●</span> Airborne · en route to SFO</span>
+              <span style="font-weight:600;color:var(--app-text);">Expected 8:45 AM</span>
+            </div>
+          </div>
+          <!-- what happens next -->
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-text3);padding:8px 4px 6px;">What Happens Next</div>
+          <div style="display:flex;flex-direction:column;gap:0;padding:0 4px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
+              <div style="width:7px;height:7px;border-radius:50%;background:var(--app-text3);flex-shrink:0;"></div>
+              <div style="flex:1;font-size:11px;color:var(--app-text3);">Boarding window <span style="color:var(--app-text3);font-style:italic;">est.</span></div>
+              <div style="font-size:11px;color:var(--app-text3);">8:45 – 9:10 AM</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
+              <div style="width:7px;height:7px;border-radius:50%;background:var(--app-text3);flex-shrink:0;"></div>
+              <div style="flex:1;font-size:11px;color:var(--app-text3);">Doors close <span style="font-style:italic;">est.</span></div>
+              <div style="font-size:11px;color:var(--app-text3);">9:15 AM</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
+              <div style="width:7px;height:7px;border-radius:50%;background:var(--app-text3);flex-shrink:0;"></div>
+              <div style="flex:1;font-size:11px;color:var(--app-text3);">Est. wheels up <span style="font-style:italic;">est.</span></div>
+              <div style="font-size:11px;color:var(--app-text3);">9:30 AM</div>
+            </div>
+          </div>
+        </div>
+        <div class="a-tabs">
+          <span class="a-tab on">Now<span class="a-tab-dot"></span></span>
+          <span class="a-tab">Ride</span><span class="a-tab">Intel</span><span class="a-tab">Pilot</span><span class="a-tab">Sounds</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02: DELAY INTELLIGENCE -->
+    <div class="feat-row rev rv">
+      <div class="feat-copy">
+        <div class="num">02</div>
+        <h3 class="title">Know why you're delayed.<br><em>Not just that you are.</em></h3>
+        <p class="desc">Awaire tracks your inbound aircraft in real time and calculates what that means for your departure. Late inbound from LA with 45 minutes to turn the plane? It tells you to expect a 95-minute delay before the airline posts anything.</p>
+        <div class="feat-pills"><span class="fp fp-b">Delay Intelligence</span><span class="fp">Inbound aircraft live</span><span class="fp">Turn time math</span><span class="fp">Real cause explained</span></div>
+      </div>
+      <div class="app-mockup rv d1" style="max-width:340px;margin:0 auto;">
+        <div class="app-nav">
+          <span class="app-nav-change">Change</span>
+          <div style="text-align:center;"><div class="app-nav-flight">AW001</div><div class="app-nav-route">SFO → JFK</div></div>
+          <div class="app-nav-right"><div class="app-nav-icon">✦</div></div>
+        </div>
+        <div class="app-body">
+          <!-- map with minor delay badge -->
+          <div style="background:#0a1020;border-radius:12px;height:72px;margin-bottom:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <div style="position:relative;width:90%;display:flex;align-items:center;">
+              <div style="width:10px;height:10px;background:var(--app-green);border-radius:50%;flex-shrink:0;"></div>
+              <div style="flex:1;height:1px;border-top:1px dashed rgba(255,255,255,0.2);margin:0 4px;"></div>
+              <div style="width:8px;height:8px;background:var(--app-blue);border-radius:50%;flex-shrink:0;"></div>
+            </div>
+            <div style="position:absolute;top:8px;right:8px;background:#3a2a0a;border:1px solid #c8820a;border-radius:100px;padding:3px 10px;font-size:9.5px;font-weight:600;color:#f5a43a;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;background:#f5a43a;border-radius:50%;"></span>95 min delay</div>
+          </div>
+          <!-- flight status card -->
+          <div class="a-card" style="padding:14px;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:20px;font-weight:600;letter-spacing:-.5px;">SFO <span style="font-size:14px;font-weight:300;color:var(--app-text2);">→</span> JFK</div>
+              <span style="background:rgba(255,69,58,0.15);border:1px solid rgba(255,69,58,0.35);color:#ff6b61;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;">95 min delay</span>
+            </div>
+            <div style="font-size:10px;color:var(--app-text3);margin-bottom:8px;">AW001 · B752</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:9.5px;color:var(--app-text3);margin-bottom:3px;"><span>EST. WHEELS UP</span><span>DURATION</span><span>ARRIVES</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;"><span style="font-size:13px;font-weight:700;color:var(--app-orange);">11:05 AM</span><span style="font-size:13px;font-weight:600;color:var(--app-text);">5h 20m</span><span style="font-size:13px;font-weight:600;color:var(--app-text);">7:25 PM</span></div>
+            <div style="font-size:10px;color:var(--app-text3);margin-top:4px;"><span style="text-decoration:line-through;">9:30 AM</span> scheduled</div>
+          </div>
+          <!-- inbound aircraft -->
+          <div class="a-card" style="border-left:2.5px solid var(--app-orange);padding:12px 14px;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--app-text3);">Your Inbound Aircraft &nbsp;N810AW</div>
+              <span style="background:rgba(255,69,58,0.15);border:1px solid rgba(255,69,58,0.3);color:#ff6b61;font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px;">50 min late</span>
+            </div>
+            <div style="font-size:15px;font-weight:600;color:var(--app-text);margin-bottom:4px;">AW1234 <span style="font-size:12px;font-weight:300;color:var(--app-text2);">from Los Angeles</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--app-text2);margin-bottom:8px;">
+              <span><span style="color:var(--app-blue);font-size:8px;">●</span> Airborne · en route to SFO</span>
+              <span style="font-weight:600;color:var(--app-text);">Lands in 22 min</span>
+            </div>
+            <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--app-text2);line-height:1.5;">Inbound lands in about 22 minutes. Airlines need ~45 min to turn the aircraft. Expect a 95+ min departure delay.</div>
+          </div>
+        </div>
+        <div class="a-tabs">
+          <span class="a-tab on">Now<span class="a-tab-dot"></span></span>
+          <span class="a-tab">Ride</span><span class="a-tab">Intel</span><span class="a-tab">Pilot</span><span class="a-tab">Sounds</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03: ROUTE RIDE -->
+    <div class="feat-row rv">
+      <div class="feat-copy">
+        <div class="num">03</div>
+        <h3 class="title">See the ride<br><em>before you feel it.</em></h3>
+        <p class="desc">Real pilot reports and forecast data along your exact route. The ride bar shows smooth to rough conditions across your entire flight path. Know about the bumps on descent into JFK before you feel them. Turbulence stops being a surprise.</p>
+        <div class="feat-pills"><span class="fp fp-b">Route Ride</span><span class="fp">Live PIREPs</span><span class="fp">Forecast bumpy air</span><span class="fp">Winds at cruise</span></div>
+      </div>
+      <div class="app-mockup rv d1" style="max-width:340px;margin:0 auto;">
+        <div class="app-nav">
+          <span class="app-nav-change">Change</span>
+          <div style="text-align:center;"><div class="app-nav-flight">AW001</div><div class="app-nav-route">SFO → JFK</div></div>
+          <div class="app-nav-right"><div class="app-nav-icon">✦</div></div>
+        </div>
+        <div class="app-body" style="padding-bottom:4px;">
+          <div style="font-size:10px;color:var(--app-text3);text-align:center;padding:10px 0 4px;">Based on 1 pilot report within 3 hrs of departure</div>
+          <!-- big ride card -->
+          <div class="a-card" style="text-align:center;padding:22px 16px;">
+            <div style="font-size:22px;color:var(--app-orange);margin-bottom:10px;">〜</div>
+            <div style="font-size:30px;font-weight:500;letter-spacing:-.5px;color:var(--app-text);margin-bottom:6px;">Light Chop</div>
+            <div style="font-size:11px;color:var(--app-text2);">descent into the New York area · FL240 and below</div>
+          </div>
+          <!-- ride bar -->
+          <div style="padding:0 4px 8px;">
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--app-text3);margin-bottom:4px;"><span>DEP</span><span>ARR</span></div>
+            <div class="a-ride-bar">
+              <div class="a-rb a-rb-g" style="flex:3;border-radius:4px 0 0 4px;"></div>
+              <div class="a-rb a-rb-o" style="flex:2;"></div>
+              <div class="a-rb a-rb-g" style="flex:3;border-radius:0 4px 4px 0;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">
+              <div style="width:16px;height:3px;background:var(--app-orange);border-radius:2px;"></div>
+              <span style="font-size:10px;color:var(--app-orange);">Light Chop</span>
+            </div>
+          </div>
+          <!-- ride assessment -->
+          <div class="a-ride-assess">
+            <div class="a-ride-assess-label">✈ Ride Assessment</div>
+            <div class="a-body">Cruise smooth. Pilots ahead are reporting moderate chop on descent into the New York area due to thunderstorms developing inland of JFK. Once the seatbelt sign comes back on, expect periodic bumps through landing.</div>
+          </div>
+          <!-- forecast bumpy air section -->
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-orange);padding:8px 4px 6px;">Forecast Bumpy Air</div>
+          <div class="a-pirep" style="margin-bottom:8px;">
+            <div style="display:flex;align-items:flex-start;gap:8px;">
+              <span style="color:var(--app-orange);font-size:11px;margin-top:1px;">●</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--app-text);margin-bottom:3px;">Moderate forecast bumpy air over the New York metro on the JFK arrival</div>
+                <div style="font-size:11px;color:var(--app-text2);">Forecast moderate bumps on the descent into JFK from the metro convection.</div>
+              </div>
+            </div>
+          </div>
+          <!-- pirep -->
+          <div class="a-pirep">
+            <div class="a-pirep-header"><span class="a-pirep-label">Pilot Report · Moderate</span><span class="a-pirep-time">1:25 PM · 2h ago</span></div>
+            <div class="a-pirep-loc">near 120nm WSW of JFK</div>
+            <div class="a-pirep-text">"Moderate chop FL220 in descent into JFK area, B738"</div>
+          </div>
+          <!-- winds card - blue left border -->
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-blue);padding:8px 4px 6px;">Winds at Cruise</div>
+          <div style="background:var(--app-card);border:1px solid var(--app-border);border-left:2.5px solid var(--app-blue);border-radius:14px;padding:12px 14px;margin-bottom:8px;">
+            <div style="display:flex;align-items:flex-start;gap:8px;">
+              <span style="color:var(--app-blue);font-size:11px;margin-top:1px;">●</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--app-text);margin-bottom:3px;">Winds at cruise</div>
+                <div style="font-size:11px;color:var(--app-text2);">Tailwind at cruise, 78 kt boost from winds at FL340-FL360. Should help you arrive a little early.</div>
+              </div>
+            </div>
+          </div>
+          <!-- what does this mean button -->
+          <div style="background:rgba(74,124,247,0.1);border:1px solid rgba(74,124,247,0.2);border-radius:100px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--app-text);margin-bottom:10px;">
+            <span style="font-size:14px;">💬</span> What does this mean for my flight?
+          </div>
+        </div>
+        <div class="a-tabs">
+          <span class="a-tab">Now<span class="a-tab-dot"></span></span><span class="a-tab on">Ride</span><span class="a-tab">Intel</span><span class="a-tab">Pilot</span><span class="a-tab">Sounds</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04: NOW TAB / PHASE OF FLIGHT -->
+    <div class="feat-row rev rv">
+      <div class="feat-copy">
+        <div class="num">04</div>
+        <h3 class="title">What's happening<br><em>right now.</em></h3>
+        <p class="desc">Live ADS-B tracking tells you exactly what phase of flight you're in and what the crew is doing. Your Briefing keeps the key facts at the top. And when something happens, you understand it before the PA announcement.</p>
+        <div class="feat-pills"><span class="fp fp-b">Phase of flight</span><span class="fp">Your Briefing</span><span class="fp">ADS-B Live</span><span class="fp">Right Now in the Cockpit</span></div>
+      </div>
+      <div class="app-mockup rv d1" style="max-width:340px;margin:0 auto;">
+        <div class="app-nav">
+          <span class="app-nav-change">Change</span>
+          <div style="text-align:center;"><div class="app-nav-flight">AW001</div><div class="app-nav-route">SFO → JFK</div></div>
+          <div class="app-nav-right"><div class="app-nav-icon">✦</div></div>
+        </div>
+        <div class="app-body">
+          <!-- status banner -->
+          <div style="background:rgba(245,164,58,0.1);border:1px solid rgba(245,164,58,0.25);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px;">
+            <span style="font-size:14px;margin-top:1px;">🕐</span>
+            <div style="font-size:11.5px;color:var(--app-orange);line-height:1.45;">Delayed ~1h 35m · Marine-layer departure delay + ATC vectoring around JFK thunderstorms.</div>
+          </div>
+          <!-- briefing card -->
+          <div class="a-card" style="background:rgba(74,124,247,0.06);border-color:rgba(74,124,247,0.14);padding:12px 14px;margin-bottom:8px;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--app-blue);margin-bottom:8px;">Your Briefing</div>
+            <div class="a-brief-row"><span class="a-brief-dot" style="background:var(--app-orange);"></span>Moderate turbulence along your route</div>
+            <div class="a-brief-row"><span class="a-brief-dot" style="background:var(--app-orange);"></span>Delayed: 95 min late off the gate; ~20 min added on arrival vectoring</div>
+            <div class="a-brief-row"><span style="margin-right:6px;">⛅</span>SFO operating normally</div>
+            <div style="background:rgba(74,124,247,0.1);border-radius:8px;padding:9px 11px;margin-top:8px;">
+              <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--app-blue);margin-bottom:4px;">Capt. AI Says</div>
+              <div style="font-size:11px;color:var(--app-text2);line-height:1.5;font-style:italic;">"We're being vectored south of JFK to give a wide berth to the thunderstorm cell over Long Island."</div>
+            </div>
+          </div>
+          <!-- phase card -->
+          <div class="a-card" style="padding:12px 14px;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--app-green);display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;background:var(--app-green);border-radius:50%;"></span>ADS-B Live</div>
+              <span style="font-size:10px;color:var(--app-text3);">11,000 ft · 282 mph</span>
+            </div>
+            <div style="font-size:22px;font-weight:500;color:var(--app-text);margin-bottom:2px;">On approach</div>
+            <div style="font-size:11px;color:var(--app-text2);margin-bottom:8px;">Configured for landing</div>
+            <div class="a-phase-bar">
+              <div class="a-pb done"></div><div class="a-pb done"></div><div class="a-pb done"></div>
+              <div class="a-pb done"></div><div class="a-pb done"></div><div class="a-pb now"></div>
+              <div class="a-pb"></div>
+            </div>
+            <div class="a-phase-next">UP NEXT &nbsp;<span>Landing. You'll feel the wheels touch</span></div>
+          </div>
+          <!-- turbulence alert -->
+          <div style="background:var(--app-card);border:1px solid var(--app-border);border-radius:12px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:12px;font-weight:600;color:var(--app-text);">Moderate turbulence ahead</div>
+            <span style="background:rgba(245,164,58,0.15);border:1px solid rgba(245,164,58,0.3);color:var(--app-orange);font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.5px;">MODERATE</span>
+          </div>
+        </div>
+        <div class="a-tabs">
+          <span class="a-tab on">Now<span class="a-tab-dot"></span></span>
+          <span class="a-tab">Ride</span><span class="a-tab">Intel</span><span class="a-tab">Pilot</span><span class="a-tab">Sounds</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05: CAPTAIN AI -->
+    <div class="feat-row rv">
+      <div class="feat-copy">
+        <div class="num">05</div>
+        <h3 class="title">Ask anything.<br><em>Get a real answer.</em></h3>
+        <p class="desc">Captain AI knows your exact flight, your live position, the weather ahead, and what the crew is doing. Ask if you're going to divert. Ask why you're slowing down. Get a real answer with actual probabilities, not a generic reassurance.</p>
+        <div class="feat-pills"><span class="fp fp-b">Captain AI</span><span class="fp">Flight-aware context</span><span class="fp">Probabilistic answers</span><span class="fp">Sounds tab</span></div>
+      </div>
+      <div class="app-mockup rv d1" style="max-width:340px;margin:0 auto;">
+        <div class="app-nav">
+          <span class="app-nav-change">Change</span>
+          <div style="text-align:center;"><div class="app-nav-flight">AW001</div><div class="app-nav-route">SFO → JFK</div></div>
+          <div class="app-nav-right"><div class="app-nav-icon">✦</div></div>
+        </div>
+        <div class="a-chat" style="padding:14px 12px 4px;">
+          <div class="a-user-bubble">We're slowing down and I see storms over New York. Are we going to divert?</div>
+          <div class="a-ai-bubble">
+            <div class="a-ai-name">✦ Capt. AI</div>
+            That slowdown is ATC putting you on a speed restriction to space you out from arrivals ahead. Standard procedure when JFK has reduced capacity from weather, not anything wrong with your aircraft.<br><br>
+            About diversion: pilots only divert when there's no path to the destination. The thunderstorms near JFK are scattered cells, they slow the arrival rate, but the airport stays open. Most likely scenarios:<br><br>
+            1. ATC vectors you around the cells, adding 15–25 min to your descent. Most common (~75%).<br>
+            2. A wider arrival path around the storm gap (~20%).<br>
+            3. Diversion to EWR or BOS only if storms park over JFK for an extended period (~5%).
+          </div>
+        </div>
+        <div class="a-ask-bar">Ask the captain…</div>
+        <div class="a-tabs">
+          <span class="a-tab">Now</span><span class="a-tab">Ride</span><span class="a-tab">Intel</span>
+          <span class="a-tab on">Pilot</span><span class="a-tab">Sounds</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CREATOR -->
+<section class="sec pad" style="max-width:760px;margin:0 auto;text-align:center;">
+  <div class="rv">
+    <div class="slabel">About the creator</div>
+    <blockquote style="font-size:clamp(22px,2.6vw,32px);font-weight:300;line-height:1.45;color:var(--w);margin:8px auto 48px;font-style:italic;letter-spacing:-.5px;max-width:680px;">
+      <span style="color:var(--blue);font-style:normal;font-size:1.4em;line-height:0;vertical-align:-0.18em;margin-right:6px;">"</span>The things that feel uncertain as a passenger are usually completely understood in the cockpit.<span style="color:var(--blue);font-style:normal;font-size:1.4em;line-height:0;vertical-align:-0.18em;margin-left:2px;">"</span>
+    </blockquote>
+    <div style="text-align:left;">
+      <p style="font-size:16px;font-weight:300;color:var(--w55);line-height:1.75;margin-bottom:18px;">I'm a commercial pilot based in California and when I was a child, flying unsettled me. Flying itself wasn't scary, it was the not knowing or understanding what was going on.</p>
+      <p style="font-size:16px;font-weight:300;color:var(--w55);line-height:1.75;margin-bottom:18px;">So I started trying to figure it out. I taught myself how flying actually works, what pilots are doing during each phase of a flight, how decisions are made, what all the sounds mean. Hours of YouTube videos, studying pilot workflows, and using X-Plane on my computer. What started as a way to make flying feel less intimidating turned into a real interest in aviation, and eventually led me to flight training.</p>
+      <p style="font-size:16px;font-weight:300;color:var(--w55);line-height:1.75;margin-bottom:18px;">Through that process I fell in love with flying and I've now been a pilot for over five years. Over that time I found myself naturally helping friends and family understand their flights using the same FAA data, weather briefings, and operational insights that pilots rely on. Explaining what's happening, and why, consistently changes how they experience flying.</p>
+      <p style="font-size:16px;font-weight:300;color:var(--w55);line-height:1.75;margin-bottom:36px;">I built Awaire to close that gap. Not to overwhelm people with aviation data, but to help them understand what's happening and why, and make traveling more enjoyable because of it.</p>
+    </div>
+    <div style="font-size:13px;color:var(--w35);letter-spacing:.5px;border-top:1px solid var(--bdr);padding-top:24px;">Commercial pilot &nbsp;·&nbsp; California &nbsp;·&nbsp; Creator, Awaire</div>
+  </div>
+</section>
+
+
+<!-- FAQ -->
+<section id="faq" class="sec pad" style="text-align:center;">
+  <div class="rv"><div class="slabel">FAQ</div><h2 class="sh">Common questions.</h2></div>
+  <div class="faq-list">
+    <div class="faq-item rv"><button class="faq-q">Does Awaire need wifi to work?<span class="faq-arr">+</span></button><div class="faq-a">Yes. Most major airlines now offer free wifi on board and the industry is rapidly moving toward free Starlink-powered connectivity across all flights. If your flight doesn't have wifi, the pre-departure briefing covers everything before you board.</div></div>
+    <div class="faq-item rv d1"><button class="faq-q">Does it work on international flights?<span class="faq-arr">+</span></button><div class="faq-a">Yes. Any flight with a trackable flight number works. Domestic, international, short or long haul.</div></div>
+    <div class="faq-item rv d2"><button class="faq-q">Do I need an account?<span class="faq-arr">+</span></button><div class="faq-a">Yes, a free account is required. Takes 30 seconds and no credit card is needed during beta.</div></div>
+    <div class="faq-item rv d1"><button class="faq-q">What airlines does it work with?<span class="faq-arr">+</span></button><div class="faq-a">Any commercial airline with a publicly trackable flight number. That covers virtually all major and regional carriers worldwide.</div></div>
+    <div class="faq-item rv d2"><button class="faq-q">Is this the iOS app?<span class="faq-arr">+</span></button><div class="faq-a">Not yet. iOS approval pending. Awaire is currently a web app that works on any phone or browser right now. Beta users get early access at launch.</div></div>
+    <div class="faq-item rv d1"><button class="faq-q">How is this different from other flight tracking apps?<span class="faq-arr">+</span></button><div class="faq-a">Flight tracking apps show you a map. Awaire tells you what is happening, why your delay occurred, what the ride conditions look like on your route, and what every sound means. In plain English, built for passengers.</div></div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="cta-glow"></div>
+  <h2 class="cta-h rv">Take it on your<br><em>next flight.</em></h2>
+  <p class="cta-sub rv d1">Free during beta. iOS app coming soon.</p>
+  <a href="https://awaireapp.com" class="btn-p rv d2">Get your briefing →</a>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="sec pad" style="text-align:center;">
+  <div class="rv"><div class="slabel">Pricing</div><h2 class="sh">Free now.<br><em>Simple later.</em></h2></div>
+  <div class="pg">
+    <div class="pc rv"><div class="pc-name">7-Day Pass</div><div class="pc-amt"><sup>$</sup>1.99</div><div class="pc-period">one-time · perfect for a trip</div><a href="https://awaireapp.com" class="pc-cta pc-g">Join beta free</a><ul class="pc-feats"><li>Full access for one trip</li><li>All features included</li><li>No subscription</li></ul></div>
+    <div class="pc feat rv d1"><div class="pc-badge">Best value</div><div class="pc-name">Annual</div><div class="pc-amt"><sup>$</sup>59</div><div class="pc-period">per year, just $5/month</div><a href="https://awaireapp.com" class="pc-cta pc-p">Join beta free</a><ul class="pc-feats"><li>Best value for regular travelers</li><li>Beta users get early access</li><li>All features included</li></ul></div>
+    <div class="pc rv d2"><div class="pc-name">Monthly</div><div class="pc-amt"><sup>$</sup>6.99</div><div class="pc-period">per month · first month free</div><a href="https://awaireapp.com" class="pc-cta pc-g">Join beta free</a><ul class="pc-feats"><li>Full access month to month</li><li>First month free at launch</li><li>All features included</li></ul></div>
+  </div>
+  <p style="margin-top:20px;font-size:13px;font-weight:300;color:var(--w35);">Completely free during beta. No card needed. All features.</p>
+</section>
+
+<footer>
+  <a href="#" class="fl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 1L13.6 10.4L23 12L13.6 13.6L12 23L10.4 13.6L1 12L10.4 10.4Z" fill="white" opacity=".3"/></svg>Awaire</a>
+  <div class="flinks"><a href="https://awaireapp.com/privacy">Privacy</a><a href="https://awaireapp.com/terms">Terms</a><a href="https://awaireapp.com">App</a></div>
+  <div class="fcopy">© 2026 Awaire Technologies LLC · For passengers, built by pilots</div>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),ring=document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-3.5+'px';cur.style.top=my-3.5+'px';});
+(function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='scale(3)';ring.style.width='52px';ring.style.height='52px';ring.style.borderColor='rgba(74,124,247,.65)';});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='scale(1)';ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(74,124,247,.4)';});
+});
+
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');}),{threshold:.1});
+
+// Hero rotating headline
+const heroRotate=document.getElementById('heroRotate');
+if(heroRotate){
+  const phrases=heroRotate.querySelectorAll('.hero-phrase');
+  let current=0;
+  const CYCLE=2000;
+  setInterval(()=>{
+    const cur=phrases[current];
+    const nextIdx=(current+1)%phrases.length;
+    const nxt=phrases[nextIdx];
+    cur.classList.remove('active');
+    cur.classList.add('exiting');
+    setTimeout(()=>cur.classList.remove('exiting'),700);
+    nxt.classList.add('active');
+    current=nextIdx;
+  },CYCLE);
+}
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  document.querySelector('.o1').style.transform=`translateY(${y*.1}px)`;
+  document.querySelector('.o2').style.transform=`translateY(${-y*.07}px)`;
+});
+
+document.querySelectorAll('.faq-item').forEach(item=>{
+  item.querySelector('.faq-q').addEventListener('click',()=>{
+    const was=item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+    if(!was)item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>
